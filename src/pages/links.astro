@@ -1,0 +1,75 @@
+---
+import LayoutDefault from '~/layouts/LayoutDefault.astro'
+import { links } from '~/.config/links'
+
+
+
+const groupedLinks = links.reduce(
+  (acc, link) => {
+    const type = link.type || 'general'
+    if (!acc[type]) {
+      acc[type] = []
+    }
+    acc[type].push(link)
+    return acc
+  },
+  {} as Record<string, typeof links>,
+)
+
+const typeOrder = ['lifestyle', 'expertise', 'insights', 'creative', 'general']
+---
+
+<LayoutDefault>
+  <section>
+    <h1 class="post-title">友情链接</h1>
+
+    {
+      typeOrder.map((type) => {
+        const typeLinks = groupedLinks[type] || []
+        if (typeLinks.length === 0) return null
+
+        const typeIcons = {
+          lifestyle: 'i-mdi-heart-outline',
+          expertise: 'i-mdi-star-outline',
+          insights: 'i-mdi-lightbulb-outline',
+          creative: 'i-mdi-palette-outline',
+          general: 'i-mdi-globe-outline',
+        }
+
+        return (
+          <div class="mb-10">
+            <h3 class="post-title mb-4">
+              <span class={`${typeIcons[type as keyof typeof typeIcons]} w-5 h-5 text-primary mr-2 inline-block align-middle`} />
+              <span class="text-sm text-gray-500 align-middle">({typeLinks.length})</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6 w-[70%]">
+              {typeLinks
+                .sort(() => Math.random() - 0.5)
+                .map((link) => {
+                  return (
+                    <a
+                      href={link.url || link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="group flex flex-col items-center text-center p-4 rounded-md border border-gray-200 dark:border-gray-700 transition-all duration-800 ease-in-out block not-underline-hover"
+                      hover:bg-primary
+                    >
+                      <div class="flex items-center justify-center mb-2">
+                        <h3 class="font-bold text-3.5 mr-2 group-hover:text-white">{link.title || link.name}</h3>
+                        {link.feed && <span class="i-mdi-rss w-4 h-4 text-blue-500 group-hover:text-white" />}
+                      </div>
+                      {link.description && (
+                        <p class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-white">
+                          {link.description}
+                        </p>
+                      )}
+                    </a>
+                  )
+                })}
+            </div>
+          </div>
+        )
+      })
+    }
+  </section>
+</LayoutDefault>

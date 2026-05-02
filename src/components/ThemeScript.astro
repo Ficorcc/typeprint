@@ -1,0 +1,50 @@
+---
+import { themeConfig } from '~/.config'
+
+const theme = themeConfig.appearance.theme
+---
+
+<script is:inline define:vars={{ theme }}>
+  // Get saved theme from localStorage or use default
+  let currentTheme = localStorage.getItem('theme') || theme
+
+  function updateTheme(theme) {
+    // Check if theme is system
+    if (theme === 'system') {
+      // Check OS preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.classList.toggle('dark', prefersDark)
+      return
+    }
+    // Set theme directly
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }
+
+  // Initial theme setup
+  updateTheme(currentTheme)
+
+  // Listen for OS theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (currentTheme === 'system') {
+      document.documentElement.classList.toggle('dark', e.matches)
+    }
+  })
+
+  // Add click event listener for theme toggle button
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('theme-toggle')
+    if (toggleButton) {
+      toggleButton.addEventListener('click', () => {
+        // Toggle between light and dark
+        const isDark = document.documentElement.classList.contains('dark')
+        currentTheme = isDark ? 'light' : 'dark'
+
+        // Save to localStorage
+        localStorage.setItem('theme', currentTheme)
+
+        // Update theme
+        updateTheme(currentTheme)
+      })
+    }
+  })
+</script>

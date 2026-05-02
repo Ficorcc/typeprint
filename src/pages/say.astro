@@ -1,0 +1,126 @@
+---
+import LayoutDefault from '~/layouts/LayoutDefault.astro'
+
+interface Memo {
+  name: string
+  content: string
+  createTime: string
+  pinned: boolean
+  attachments?: any[]
+}
+
+interface MemosConfig {
+  server: string
+  limit: number
+}
+
+const memosConfig: MemosConfig = {
+  server: 'https://memos.ficor.net',
+  limit: 50,
+}
+
+async function fetchMemos(): Promise<Memo[]> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+    const response = await fetch(`${memosConfig.server}/api/v1/memos?pageSize=${memosConfig.limit}`, {
+      headers: {
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      console.error('Memos API Error:', response.status)
+      return []
+    }
+
+    const data = await response.json()
+    return data.memos || []
+  } catch (error) {
+    console.error('Error fetching memos:', error)
+    return []
+  }
+}
+
+function formatTime(timeStr: string): string {
+  return new Date(timeStr).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function processContent(content: string): string {
+  return content.replace(
+    /https?:\/\/[^\s]+/g,
+    (url) =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${url}</a>`,
+  )
+}
+
+const memos = await fetchMemos()
+---
+
+<LayoutDefault>
+  <section>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="post-title !mb-0">说说</h1>
+      <span class="text-sm text-gray-500 dark:text-gray-400">
+        共 <span class="text-primary font-bold">{memos.length}</span> 条
+      </span>
+    </div>
+
+    <div class="space-y-6">
+      {
+        memos.length > 0 ? (
+          <div class="space-y-4">
+            {memos.map((memo) => (
+              <article class="p-5 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300">
+                <div class="flex items-center mb-3">
+                  <span class="i-mdi-clock-outline w-4 h-4 mr-2 text-gray-400" />
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{formatTime(memo.createTime)}</span>
+                  {memo.pinned && (
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">置顶</span>
+                  )}
+                </div>
+                <div class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  <Fragment set:html={processContent(memo.content)} />
+                </div>
+                {memo.attachments && memo.attachments.length > 0 && (
+                  <div class="mt-4 grid grid-cols-3 gap-2">
+                    {memo.attachments.slice(0, 9).map((att) => (
+                      <a
+                        href={att.content}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="aspect-square rounded-lg overflow-hidden"
+                      >
+                        <img
+                          src={att.content}
+                          alt="attachment"
+                          class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div class="p-8 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+            <span class="i-mdi-coffee-outline w-12 h-12 mx-auto mb-3 text-gray-400" />
+            <p class="text-gray-500 dark:text-gray-400">未获取到动态</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</LayoutDefault>

@@ -1,0 +1,90 @@
+:root {
+  --uno-colors-primary: #313e5a;
+  --uno-colors-background: theme('colors.background');
+  --uno-fonts-ui: theme('fontFamily.ui');
+  --uno-colors-shadow: theme('colors.shadow');
+}
+html {
+  --at-apply: antialiased;
+  --at-apply: 'bg-background c-primary font-ui text-shadow-color-shadow';
+
+  text-shadow: 1px 1px 1px var(--uno-colors-shadow);
+  background-size: 7px 7px;
+  background-image: linear-gradient(to right, var(--uno-colors-shadow) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--uno-colors-shadow) 1px, transparent 1px);
+}
+
+/* 设置明模式下的字体图标颜色 */
+html:not(.dark) [class^='i-mdi-'] {
+  color: #313e5a;
+}
+
+/* 提高暗模式下的对比度 */
+html.dark {
+  --at-apply: 'c-white';
+  color: #ffffff;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  --at-apply: 'c-white font-bold';
+  color: #ffffff;
+}
+
+html.dark .post-title {
+  --at-apply: 'c-white';
+  color: #ffffff;
+}
+
+html.dark [class^='i-mdi-'] {
+  color: #ffffff;
+}
+
+html.dark p,
+html.dark span,
+html.dark a,
+html.dark li,
+html.dark div,
+html.dark article,
+html.dark section,
+html.dark main,
+html.dark header,
+html.dark footer {
+  color: #ffffff;
+}
+
+html.dark a {
+  color: #ffffff;
+}
+
+html.dark a:hover,
+html.dark a:hover h1,
+html.dark a:hover h2,
+html.dark a:hover h3,
+html.dark a:hover p,
+html.dark a:hover span,
+html.dark a:hover [class^='i-mdi-'] {
+  color: #000000 !important;
+}
+
+html.dark a.not-underline-hover:hover {
+  background-color: #ffffff !important;
+}
+
+html.dark hgroup > a:hover,
+html.dark hgroup > a:hover h1,
+html.dark hgroup > a:hover h3 {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+:where(a):not(.not-underline-hover) {
+  --at-apply: 'p-1.5px';
+  --at-apply: 'decoration-underline decoration-0.1em decoration-offset-2px';
+  --at-apply: 'ease-in-out duration-300ms';
+  --at-apply: 'hover:(c-background bg-primary decoration-primary)';
+}

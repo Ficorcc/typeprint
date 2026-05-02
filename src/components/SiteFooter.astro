@@ -1,0 +1,46 @@
+---
+import { themeConfig } from '~/.config'
+
+const year = new Date().getFullYear()
+
+const { website, author, footer } = themeConfig.site
+
+function parseFooter(str: string) {
+  str = str.replace(/%author/g, author)
+  str = str.replace(/%website/g, website)
+  str = str.replace(/%year/g, year.toString())
+  return str
+}
+---
+
+{
+  footer.length &&
+    footer.map((str, index) => (
+      <p>
+        <span set:html={parseFooter(str)} />
+        {index === 0 && (
+          <button
+            id="theme-toggle"
+            title="切换主题"
+            class="px-1 not-underline-hover inline-flex items-center justify-center ml-2"
+          >
+            <span class="i-mdi-brightness-4 dark:i-mdi-brightness-7" style="width: 24px; height: 24px;" />
+          </button>
+        )}
+      </p>
+    ))
+}
+
+<style>
+  p {
+    --at-apply: 'font-bold text-3';
+    display: flex;
+    align-items: center;
+  }
+
+  #theme-toggle {
+    vertical-align: middle;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+import { themeConfig } from '~/.config'
+import LayoutDefault from '~/layouts/LayoutDefault.astro'
+import type { Post } from '~/types'
+import { formatDate, getPosts, getCategories, getPathFromCategory, getTags } from '~/utils'
+
+const { translate: t } = Astro.locals
+const posts = await getPosts(true)
+const categoryMap = await getCategories()
+const tagMap = await getTags()
+
+const categoryList = getCategoryListFromMap(categoryMap)
+const tagList = getTagListFromMap(tagMap)
+const yearMap = getYearMap(posts)
+
+interface ListItem {
+  title: string
+  href: string
+  date: string
+}
+
+function getYearMap(posts: Post[]) {
+  const result = new Map<number, ListItem[]>()
+  for (const post of posts) {
+    const year = (post.data.pubDate ?? new Date()).getFullYear()
+    const posts = result.get(year) ?? []
+    posts.push(getListItem(post))
+    result.set(year, posts)
+  }
+  return Array.from(result.entries())
+}
+
+function getListItem(post: Post): ListItem {
+  return {
+    title: post.data.title,
+    href: `/posts/${post.id}/`,
+    date: formatDate(post.data.pubDate, 'MM-DD'),
+  }
+}
+
+function getCategoryListFromMap(map: typeof categoryMap) {
+  return Array.from(map).map(([key, value]) => ({
+    title: key,
+    href: `/categories/${getPathFromCategory(key, themeConfig.site.categoryMap)}`,
+    size: t('categories_count', value.length),
+  }))
+}
+
+function getTagListFromMap(map: typeof tagMap) {
+  return Array.from(map).map(([key, value]) => ({
+    title: key,
+    href: `/tags/${key}`,
+    size: t('tag_count', value.length),
+  }))
+}
+---
+
+<LayoutDefault>
+  <!-- 时间归档 -->
+  <div class="mb-10">
+    <h3 class="post-title mb-6">归档</h3>
+    <div flex="~ col gap-4">
+      {
+        yearMap.map(([year, posts]) => (
+          <section>
+            <h2 class="post-title">{year}</h2>
+            <ul class="pl-6" flex="~ col gap-4">
+              {posts.map(({ title, href, date }) => (
+                <li>
+                  <h3 class="post-title">
+                    <a href={href}>{title}</a>
+                  </h3>
+                  <time>{date}</time>
+                </li>
+            ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="pt-6 mb-10 border-t border-gray-300 dark:border-gray-600">
+    <!-- 分类部分 -->
+    <div class="mb-10">
+      <h3 class="post-title">分类</h3>
+      <ul class="pl-6" flex="~ col gap-4">
+        {
+          categoryList.map(({ title, href, size }) => (
+            <li>
+              <h3 class="post-title">
+                <a href={href}># {title}</a>
+              </h3>
+              <p>{size}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    
+    <!-- 标签部分 -->
+    <div>
+      <h3 class="post-title">标签</h3>
+      <ul class="pl-6" grid="~ cols-1 md:cols-2 lg:cols-3 gap-4">
+        {
+          tagList.map(({ title, href, size }) => (
+            <li>
+              <h3 class="post-title">
+                <a href={href}># {title}</a>
+              </h3>
+              <p>{size}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</LayoutDefault>
